@@ -1,0 +1,16 @@
+gesdinet_jwt_refresh_token:
+  refresh_token_class: App\Entity\RefreshToken
+  firewall: 'api'
+  return_expiration: true
+  token_parameter_name: 'refresh'
+  single_use: true
+  return_expiration_parameter_name: 'refresh_expiration'
+  cookie:
+    enabled: true
+    same_site: 'lax'
+    secure: false
+    path: '/'
+    domain: null
+    http_only: true
+    partitioned: false
+    remove_token_from_body: false

@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Project;
 use App\Entity\Task;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
@@ -83,10 +84,10 @@ final class TaskFixtures extends Fixture implements DependentFixtureInterface
       $task->setTitle(title: "Tâche n°$i")
            ->setDescription(description: "Description de la tâche n°$i");
 
-      $project = $this->getReference(name: sprintf(
-        ProjectFixtures::PROJECT_REFERENCE, 
-        $i % ProjectFixtures::NB_PROJECTS
-      ));
+      $project = $this->getReference(
+        sprintf(self::TASK_REFERENCE, $i % ProjectFixtures::NB_PROJECTS),
+        Project::class
+      );
 
       $task->setProject(project: $project);
 
