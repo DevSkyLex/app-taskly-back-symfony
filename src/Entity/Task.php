@@ -34,7 +34,10 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * 
  * @author Valentin FORTIN <contact@valentin-fortin.pro>
  */
-#[ApiResource]
+#[ApiResource(
+  paginationEnabled: true,
+  paginationClientItemsPerPage: true,
+)]
 #[ApiFilter(filterClass: RangeFilter::class, properties: ['createdAt'])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['title' => 'partial'])]
 #[ApiFilter(filterClass: OrderFilter::class, properties: ['createdAt', 'title'], arguments: ['orderParameterName' => 'order'])]
@@ -297,22 +300,22 @@ class Task
    * @var Task|null $parent Parent de la tâche
    */
   #[Gedmo\TreeParent]
-  #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'childrens')]
+  #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
   private ?self $parent = null;
 
   /**
-   * Propriété childrens
+   * Propriété children
    * 
    * Enfants de la tâche
    * 
    * @access private
    * @since 1.0.0
    * 
-   * @var Collection $childrens Enfants de la tâche
+   * @var Collection $children Enfants de la tâche
    */
   #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
   #[Groups(groups: ['task:read'])]
-  private Collection $childrens;
+  private Collection $children;
 
   /**
    * Propriété project
@@ -340,7 +343,7 @@ class Task
    */
   public function __construct()
   {
-    $this->childrens = new ArrayCollection();
+    $this->children = new ArrayCollection();
   }
   //#endregion
 
@@ -573,7 +576,7 @@ class Task
   }
 
   /**
-   * Méthode getChildrens
+   * Méthode getchildren
    * 
    * Retourne les enfants de la tâche
    * 
@@ -582,9 +585,9 @@ class Task
    * 
    * @return Collection Enfants de la tâche
    */
-  public function getChildrens(): Collection
+  public function getChildren(): Collection
   {
-    return $this->childrens;
+    return $this->children;
   }
 
   /**
@@ -601,8 +604,8 @@ class Task
    */
   public function addChild(self $child): static
   {
-    if (!$this->childrens->contains(element: $child)) {
-      $this->childrens[] = $child;
+    if (!$this->children->contains(element: $child)) {
+      $this->children[] = $child;
       $child->setParent(parent: $this);
     }
 
@@ -623,7 +626,7 @@ class Task
    */
   public function removeChild(self $child): static
   {
-    if ($this->childrens->removeElement(element: $child)) {
+    if ($this->children->removeElement(element: $child)) {
       $child->setParent(parent: null);
     }
 
@@ -691,7 +694,7 @@ class Task
    */
   public function isLeaf(): bool
   {
-    return $this->childrens->isEmpty();
+    return $this->children->isEmpty();
   }
   //#endregion
 }

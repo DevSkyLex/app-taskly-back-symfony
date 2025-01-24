@@ -29,7 +29,10 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
   * 
   * @author Valentin FORTIN <contact@valentin-fortin.pro>
  */
-#[ApiResource]
+#[ApiResource(
+  paginationEnabled: true,
+  paginationClientItemsPerPage: true,
+)]
 #[ApiFilter(filterClass: RangeFilter::class, properties: ['createdAt'])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['name' => 'partial'])]
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
@@ -148,7 +151,7 @@ class Project
    */
   public function getId(): ?Uuid
   {
-    return $this->id;
+    return $this->id; 
   }
 
   /**
