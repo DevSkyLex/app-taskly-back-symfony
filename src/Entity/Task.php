@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\Repository\TaskRepository;
+use App\State\Task\TaskProvider;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -40,6 +41,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
   paginationClientItemsPerPage: true,
   normalizationContext: ['groups' => ['task:read']],
   denormalizationContext: ['groups' => ['task:write']],
+  provider: TaskProvider::class,
 )]
 #[ApiFilter(filterClass: RangeFilter::class, properties: ['createdAt'])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['title' => 'partial'])]

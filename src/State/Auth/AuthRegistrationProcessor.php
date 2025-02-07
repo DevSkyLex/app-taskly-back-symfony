@@ -1,18 +1,16 @@
 <?php
 
-namespace App\State;
+namespace App\State\Auth;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\DTO\UserRegistrationOutput;
+use App\DTO\Auth\AuthRegistrationOutput;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
  * Classe UserRegistrationProcessor
@@ -25,7 +23,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  * 
  * @author Valentin FORTIN <contact@valentin-fortin.pro>
  */
-final class UserRegistrationProcessor implements ProcessorInterface
+final class AuthRegistrationProcessor implements ProcessorInterface
 {
   //#region Constructeur
   /**
@@ -39,12 +37,11 @@ final class UserRegistrationProcessor implements ProcessorInterface
    * 
    * @param UserRepository $userRepository
    * @param UserPasswordHasherInterface $passwordHasher
-   * @param NormalizerInterface $normalizer
+   * @param SerializerInterface $serializer
    */
   public function __construct(
     private readonly UserRepository $userRepository,
     private readonly UserPasswordHasherInterface $passwordHasher,
-    private readonly ValidatorInterface $validator,
     private readonly SerializerInterface $serializer,
   ) {}
   //#endregion
@@ -92,7 +89,7 @@ final class UserRegistrationProcessor implements ProcessorInterface
 
     $this->userRepository->save(user: $user);
 
-    $output = new UserRegistrationOutput(
+    $output = new AuthRegistrationOutput(
       id: $user->getId(),
       email: $user->getEmail(),
     );

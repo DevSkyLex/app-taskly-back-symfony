@@ -1,31 +1,22 @@
 <?php
 
-namespace App\State;
+namespace App\State\Auth;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\DTO\UserLoginOutput;
-use App\Entity\User;
 use App\Exception\InvalidCredentialsException;
 use App\Repository\UserRepository;
 use App\Services\RefreshTokenService;
-use DateTimeImmutable;
-use Gesdinet\JWTRefreshTokenBundle\Generator\RefreshTokenGeneratorInterface;
-use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
-use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\HttpFoundation\Cookie;
-use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\SerializerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
+use App\DTO\Auth\AuthLoginOutput;
 
-final class UserLoginProcessor implements ProcessorInterface
+final class AuthLoginProcessor implements ProcessorInterface
 {
   //#region Constructeur
   /**
@@ -143,10 +134,10 @@ final class UserLoginProcessor implements ProcessorInterface
      * Permet de retourner les données
      * de connexion de l'utilisateur
      * 
-     * @var UserLoginOutput $output
+     * @var AuthLoginOutput $output
      */
 
-    $output = new UserLoginOutput(
+    $output = new AuthLoginOutput(
       token: $token,
       refreshToken: $refreshToken,
     );

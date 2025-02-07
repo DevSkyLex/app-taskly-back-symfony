@@ -1,12 +1,12 @@
 <?php
 
-namespace App\DTO;
+namespace App\DTO\Auth;
 
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Validator\Constraints as Assert;
 
 /**
- * Classe UserRegistrationInput
+ * Classe AuthRegistrationInput
  * @final
  * 
  * Cette classe permet de représenter les données
@@ -14,7 +14,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * 
  * @version 1.0.0
  */
-final class UserRegistrationInput
+final class AuthRegistrationInput
 {
   //#region Constructeur
   /**

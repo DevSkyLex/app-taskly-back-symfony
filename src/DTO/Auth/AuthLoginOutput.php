@@ -1,11 +1,11 @@
 <?php 
 
-namespace App\DTO;
+namespace App\DTO\Auth;
 
 use ApiPlatform\Metadata\ApiProperty;
 
 /**
- * Classe UserLoginOutput
+ * Classe AuthLoginOutput
  * @final
  * 
  * Cette classe permet de représenter les données
@@ -13,7 +13,7 @@ use ApiPlatform\Metadata\ApiProperty;
  * 
  * @version 1.0.0
  */
-final class UserLoginOutput
+final class AuthLoginOutput
 {
   //#region Constructeur
   /**

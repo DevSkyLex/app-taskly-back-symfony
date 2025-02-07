@@ -1,12 +1,12 @@
 <?php
 
-namespace App\DTO;
+namespace App\DTO\Auth;
 
 use ApiPlatform\Metadata\ApiProperty;
 use Symfony\Component\Uid\Uuid;
 
 /**
- * Classe UserRegistrationOutput
+ * Classe AuthRegistrationOutput
  * @final
  * 
  * Cette classe permet de représenter les données
@@ -14,7 +14,7 @@ use Symfony\Component\Uid\Uuid;
  * 
  * @version 1.0.0
  */
-final class UserRegistrationOutput
+final class AuthRegistrationOutput
 {
   //#region Constructeur
   /**

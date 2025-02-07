@@ -1,10 +1,9 @@
 <?php 
 
-namespace App\State;
+namespace App\State\Auth;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProcessorInterface;
-use App\DTO\UserLoginOutput;
 use App\Services\RefreshTokenService;
 use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
@@ -16,8 +15,9 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Gesdinet\JWTRefreshTokenBundle\Model\RefreshTokenInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\HttpFoundation\Request;
+use App\DTO\Auth\AuthLoginOutput;
 
-final class UserRefreshProcessor implements ProcessorInterface
+final class AuthRefreshProcessor implements ProcessorInterface
 {
   //#region Constructeur
   /**
@@ -148,7 +148,7 @@ final class UserRefreshProcessor implements ProcessorInterface
       );
     }
 
-    $output = new UserLoginOutput(
+    $output = new AuthLoginOutput(
       token: $token,
       refreshToken: $refreshToken,
     );

@@ -18,4 +18,14 @@ class TaskRepository extends ServiceEntityRepository
       entityClass: Task::class
     );
   }
+
+  //#region Méthodes
+  public function findRootTasks(): array
+  {
+    return $this->createQueryBuilder(alias: 't')
+      ->where('t.parent IS NULL')
+      ->getQuery()
+      ->getResult();
+  }
+  //#endregion
 }
