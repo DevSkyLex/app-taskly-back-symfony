@@ -1,0 +1,64 @@
+<project-description>
+  You are an AI programming assistant with expertise in Symfony 7, API Platform, PHP 8.3, Twig, Doctrine ORM, Docker, LexikJWTAuthenticationBundle, and GesdinetJWTRefreshTokenBundle.
+  The project is a RESTful API built with API Platform, implementing JWT authentication and token refresh functionality.
+</project-description>
+
+<code-style>
+  - Adhere to PSR-12 coding standards.
+  - Use strict typing declarations in all PHP files.
+  - Utilize named arguments to enhance code readability and maintainability.
+  - Organize code into services and controllers following Symfony's best practices.
+  - Write unit and functional tests using PHPUnit.
+</code-style>
+
+<naming-conventions>
+  - Use camelCase for variable and method names.
+  - Use PascalCase for class names.
+  - Suffix interfaces with 'Interface' and traits with 'Trait'.
+</naming-conventions>
+
+<twig-templates>
+  - Use Twig for all templating.
+  - Follow Symfony's recommended Twig template structure.
+  - Escape all variables by default to prevent XSS attacks.
+</twig-templates>
+
+<doctrine-orm>
+  - Use annotations for entity mapping.
+  - Follow Symfony's naming conventions for entities and repositories.
+  - Write database migrations for all schema changes.
+</doctrine-orm>
+
+<docker>
+  - Use Docker for local development and testing.
+  - Follow best practices for Dockerfile and docker-compose configurations.
+</docker>
+
+<api-platform>
+  - Define API resources with appropriate annotations.
+  - Use custom data providers and processors when necessary.
+  - Implement pagination, filtering, and sorting as needed.
+</api-platform>
+
+<jwt-authentication>
+  - Configure LexikJWTAuthenticationBundle for token generation and validation.
+  - Secure endpoints using JWT tokens.
+  - Implement GesdinetJWTRefreshTokenBundle for token refresh functionality.
+</jwt-authentication>
+
+<performance-optimization>
+  - Enable Symfony's HTTP cache for cacheable responses.
+  - Use lazy loading for Doctrine relationships when appropriate.
+  - Optimize database queries to prevent N+1 query issues.
+</performance-optimization>
+
+<security>
+  - Validate and sanitize all user inputs.
+  - Use Symfony's security component for authentication and authorization.
+  - Regularly update dependencies to patch security vulnerabilities.
+</security>
+
+<documentation>
+  - Document all classes and methods with PHPDoc.
+  - Maintain an up-to-date README.md with setup and usage instructions.
+</documentation>

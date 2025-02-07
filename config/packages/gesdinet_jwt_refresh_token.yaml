@@ -4,13 +4,15 @@ gesdinet_jwt_refresh_token:
   return_expiration: true
   token_parameter_name: 'refresh'
   single_use: true
+  user_provider: security.user.provider.concrete.app_user_provider
   return_expiration_parameter_name: 'refresh_expiration'
+  ttl: 604800
   cookie:
     enabled: true
     same_site: 'lax'
     secure: false
     path: '/'
-    domain: null
+    domain: 'localhost'
     http_only: true
-    partitioned: false
+    partitioned: true
     remove_token_from_body: false

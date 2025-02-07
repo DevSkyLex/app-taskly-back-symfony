@@ -6,6 +6,7 @@ use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use App\Entity\Enum\ProjectRole;
 use App\Repository\ProjectRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -19,19 +20,21 @@ use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Uid\Uuid;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 /**
-  * Classe Project (Entité)
-  * 
-  * Représente un Projet
-  * 
-  * @category Entity
-  * @package App\Entity
-  * @version 1.0.0
-  * 
-  * @author Valentin FORTIN <contact@valentin-fortin.pro>
+ * Classe Project (Entité)
+ * 
+ * Représente un Projet
+ * 
+ * @category Entity
+ * @package App\Entity
+ * @version 1.0.0
+ * 
+ * @author Valentin FORTIN <contact@valentin-fortin.pro>
  */
 #[ApiResource(
   paginationEnabled: true,
   paginationClientItemsPerPage: true,
+  normalizationContext: ['groups' => ['project:read']],
+  denormalizationContext: ['groups' => ['project:write']],
 )]
 #[ApiFilter(filterClass: RangeFilter::class, properties: ['createdAt'])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['name' => 'partial'])]
@@ -120,6 +123,21 @@ class Project
   #[ORM\OneToMany(targetEntity: Task::class, mappedBy: 'project')]
   #[Groups(groups: ['project:read'])]
   private Collection $tasks;
+
+
+  /**
+   * Propriété members
+   * 
+   * Liste des membres du projet
+   * 
+   * @access private
+   * @since 1.0.0
+   * 
+   * @var Collection $members Liste des membres du projet
+   */
+  #[ORM\OneToMany(targetEntity: ProjectMember::class, mappedBy: 'project')]
+  #[Groups(groups: ['project:read'])]
+  private Collection $members;
   //#endregion
 
   //#region Constructeur
@@ -135,6 +153,7 @@ class Project
   public function __construct()
   {
     $this->tasks = new ArrayCollection();
+    $this->members = new ArrayCollection();
   }
   //#endregion
 
@@ -151,7 +170,7 @@ class Project
    */
   public function getId(): ?Uuid
   {
-    return $this->id; 
+    return $this->id;
   }
 
   /**
@@ -286,6 +305,122 @@ class Project
     }
 
     return $this;
+  }
+
+  /**
+   * Méthode getMembers
+   * 
+   * Retourne la liste des membres du projet
+   * 
+   * @access public
+   * @since 1.0.0
+   * 
+   * @return Collection Liste des membres du projet
+   */
+  public function getMembers(): Collection
+  {
+    return $this->members;
+  }
+
+  /**
+   * Méthode addMember
+   * 
+   * Ajoute un membre au projet
+   * 
+   * @access public
+   * @since 1.0.0
+   * 
+   * @param ProjectMember $member Membre à ajouter
+   * 
+   * @return Project Instance de la classe Project
+   */
+  public function addMember(ProjectMember $member): static
+  {
+    if (!$this->members->contains($member)) {
+      $this->members->add($member);
+      $member->setProject($this);
+    }
+
+    return $this;
+  }
+
+  /**
+   * Méthode removeMember
+   * 
+   * Supprime un membre du projet
+   * 
+   * @access public
+   * @since 1.0.0
+   * 
+   * @param ProjectMember $member Membre à supprimer
+   * 
+   * @return Project Instance de la classe Project
+   */
+  public function removeMember(ProjectMember $member): static
+  {
+    if ($this->members->removeElement($member)) {
+      if ($member->getProject() === $this) {
+        $member->setProject(null);
+      }
+    }
+
+    return $this;
+  }
+
+  /**
+   * Méthode isMember
+   * 
+   * Vérifie si un utilisateur est membre du projet
+   * 
+   * @access public
+   * @since 1.0.0
+   * 
+   * @param User $user Utilisateur à vérifier
+   * 
+   * @return bool Renvoie vrai si l'utilisateur est membre du projet, sinon faux
+   */
+  public function isMember(User $user): bool {
+    foreach ($this->getMembers() as $member) {
+      if ($member->getMember() === $user) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Méthode isManager
+   * 
+   * Vérifie si un utilisateur est manager du projet
+   * 
+   * @access public
+   * @since 1.0.0
+   * 
+   * @param User $user Utilisateur à vérifier
+   * 
+   * @return bool Renvoie vrai si l'utilisateur est manager du projet, sinon faux
+   */
+  public function isManager(User $user): bool {
+    foreach ($this->getMembers() as $member) {
+      if ($member->getMember() === $user && $member->getRole() === ProjectRole::MANAGER) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  public function hasRole(User $user, array $roles): bool
+  {
+    foreach ($this->getMembers() as $member) {
+      if ($member->getMember() === $user && in_array(
+        $member->getRole(), 
+        $roles
+      )) { return true; }
+    }
+
+    return false;
   }
   //#endregion
 }

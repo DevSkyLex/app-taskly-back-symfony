@@ -1,6 +1,16 @@
 api_platform:
   title: 'Taskly'
   version: 1.0.0
+  swagger:
+    api_keys:
+      Bearer:
+        name: Authorization
+        type: header
+
+  formats:
+    jsonld: ['application/ld+json']
+    jsonld_collection: ['application/ld+json']
+
   defaults:
     stateless: true
     cache_headers:
