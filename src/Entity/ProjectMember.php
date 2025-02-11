@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ProjectMemberRepository;
 use Doctrine\ORM\Mapping as ORM;
 use App\Entity\Enum\ProjectRole;
+use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -26,10 +27,9 @@ class ProjectMember
   #[Groups(groups: ['project:read', 'project:write'])]
   private ?Project $project = null;
 
-  #[ORM\Column(type: 'string', length: 32, nullable: true)]
-  #[Assert\Choice(choices: [ProjectRole::class, 'cases'])]
+  #[ORM\Column(type: Types::STRING, enumType: ProjectRole::class, length: 32, nullable: true)]
   #[Groups(groups: ['project:read', 'project:write'])]
-  private ?string $role = null;
+  private ProjectRole $role = ProjectRole::CONTRIBUTOR;
   //#endregion
 
   public function getProject(): ?Project
@@ -56,12 +56,12 @@ class ProjectMember
     return $this;
   }
 
-  public function getRole(): ?string
+  public function getRole(): ?ProjectRole
   {
     return $this->role;
   }
 
-  public function setRole(?string $role): static
+  public function setRole(?ProjectRole $role): static
   {
     $this->role = $role;
 
