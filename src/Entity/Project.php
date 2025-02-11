@@ -35,6 +35,11 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
   paginationClientItemsPerPage: true,
   normalizationContext: ['groups' => ['project:read']],
   denormalizationContext: ['groups' => ['project:write']],
+  outputFormats: ['jsonld' => ['application/ld+json']],
+  inputFormats: [
+    'jsonld' => ['application/ld+json'],
+    'json' => ['application/json'],
+  ],
 )]
 #[ApiFilter(filterClass: RangeFilter::class, properties: ['createdAt'])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['name' => 'partial'])]

@@ -103,10 +103,8 @@ final class AuthLoginProcessor implements ProcessorInterface
     $refreshToken = $refreshToken->getRefreshToken();
     
     // Crée une réponse JSON
-    $response = new JsonResponse();
-    $response->headers->set(
-      key: 'Content-Type', 
-      values: 'application/ld+json'
+    $response = new JsonResponse(
+      headers: ['Content-Type' => 'application/ld+json'],
     );
 
     /**

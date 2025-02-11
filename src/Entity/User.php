@@ -5,6 +5,7 @@ namespace App\Entity;
 use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Get;
@@ -29,6 +30,9 @@ use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Gedmo\Mapping\Annotation as Gedmo;
 use App\Entity\Enum\UserRole;
+use DateTimeImmutable;
+use Symfony\Component\HttpFoundation\File\File;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
 #[ApiResource(
   paginationEnabled: true,
@@ -37,6 +41,7 @@ use App\Entity\Enum\UserRole;
   denormalizationContext: ['groups' => ['user:write']],
   security: 'is_granted("ROLE_USER") or object == user',
 )]
+#[Vich\Uploadable]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['email' => 'partial'])]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
@@ -129,6 +134,72 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
   #[Assert\NotBlank(message: 'Please enter a password')]
   #[Groups(groups: ['user:write'])]
   private ?string $password = null;
+
+  /**
+   * Propriété firstName
+   * 
+   * Prénom de l'utilisateur
+   * 
+   * @access private
+   * @since 1.0.0
+   * 
+   * @var string|null $firstName Prénom de l'utilisateur
+   */
+  #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
+  #[Assert\NotBlank(message: 'Please enter a first name')]
+  #[Assert\Length(
+    min: 2,
+    max: 50,
+    minMessage: 'The first name must be at least {{ limit }} characters long',
+    maxMessage: 'The first name cannot be longer than {{ limit }} characters'
+  )]
+  #[Groups(groups: ['user:read', 'user:write'])]
+  private ?string $firstName = null;
+
+  /**
+   * Propriété lastName
+   * 
+   * Nom de l'utilisateur
+   * 
+   * @access private
+   * @since 1.0.0
+   * 
+   * @var string|null $lastName Nom de l'utilisateur
+   */
+  #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
+  #[Assert\NotBlank(message: 'Please enter a last name')]
+  #[Assert\Length(
+    min: 2,
+    max: 50,
+    minMessage: 'The last name must be at least {{ limit }} characters long',
+    maxMessage: 'The last name cannot be longer than {{ limit }} characters'
+  )]
+  #[Groups(groups: ['user:read', 'user:write'])]
+  private ?string $lastName = null;
+
+  /**
+   * Propriété avatarFile
+   * 
+   * Fichier de l'avatar de l'utilisateur
+   * 
+   * @access private
+   * @since 1.0.0
+   * 
+   * @var File|null $avatarFile Fichier de l'avatar de l'utilisateur
+   */
+  #[Assert\File(
+    maxSize: '2M',
+    mimeTypes: ['image/jpeg', 'image/png', 'image/jpg'],
+    mimeTypesMessage: 'Please upload a valid image file (JPEG or PNG)'
+  )]
+  #[Vich\UploadableField(mapping: 'user_avatar', fileNameProperty: 'avatar')]
+  #[Groups(groups: ['user:write'])]
+  private ?File $avatarFile = null;
+
+
+  #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
+  #[Groups(groups: ['user:read', 'user:write'])]
+  private ?string $avatar = null;
   //#endregion
 
   public function getId(): ?Uuid
@@ -187,5 +258,57 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
   {
     // If you store any temporary, sensitive data on the user, clear it here
     // $this->plainPassword = null;
+  }
+
+  public function getFirstName(): ?string
+  {
+    return $this->firstName;
+  }
+
+  public function setFirstName(?string $firstName): static
+  {
+    $this->firstName = $firstName;
+
+    return $this;
+  }
+
+  public function getLastName(): ?string
+  {
+    return $this->lastName;
+  }
+
+  public function setLastName(?string $lastName): static
+  {
+    $this->lastName = $lastName;
+
+    return $this;
+  }
+
+  public function getAvatar(): ?string
+  {
+    return $this->avatar;
+  }
+
+  public function setAvatar(?string $avatar): static
+  {
+    $this->avatar = $avatar;
+
+    return $this;
+  }
+
+  public function getAvatarFile(): ?File
+  {
+    return $this->avatarFile;
+  }
+
+  public function setAvatarFile(?File $avatarFile): static
+  {
+    $this->avatarFile = $avatarFile;
+
+    if ($avatarFile) {
+      $this->updatedAt = new DateTimeImmutable();
+    }
+
+    return $this;
   }
 }

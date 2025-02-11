@@ -12,6 +12,8 @@ use ApiPlatform\Metadata\ApiProperty;
  * renvoyées lors de la connexion d'un utilisateur
  * 
  * @version 1.0.0
+ * 
+ * @author Valentin FORTIN <contact@valentin-fortin.pro>
  */
 final class AuthLoginOutput
 {

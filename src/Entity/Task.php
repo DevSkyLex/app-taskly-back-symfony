@@ -42,6 +42,11 @@ use Gedmo\Mapping\Annotation as Gedmo;
   normalizationContext: ['groups' => ['task:read']],
   denormalizationContext: ['groups' => ['task:write']],
   provider: TaskProvider::class,
+  outputFormats: ['jsonld' => ['application/ld+json']],
+  inputFormats: [
+    'jsonld' => ['application/ld+json'],
+    'json' => ['application/json'],
+  ],
 )]
 #[ApiFilter(filterClass: RangeFilter::class, properties: ['createdAt'])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['title' => 'partial'])]

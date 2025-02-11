@@ -17,6 +17,11 @@ use App\DTO\Auth\AuthRegistrationOutput;
 #[ApiResource(
   shortName: 'Authentication',
   routePrefix: '/auth',
+  outputFormats: ['jsonld' => ['application/ld+json']],
+  inputFormats: [
+    'jsonld' => ['application/ld+json'],
+    'json' => ['application/json'],
+  ],
   operations: [
     new Post(
       uriTemplate: '/register',
