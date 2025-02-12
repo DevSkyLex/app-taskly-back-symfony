@@ -8,7 +8,6 @@ api_platform:
         type: header
 
   formats:
-    multipart: ['multipart/form-data']
     jsonld: ['application/ld+json']
     jsonld_collection: ['application/ld+json']
 

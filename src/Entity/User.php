@@ -2,21 +2,11 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Patch;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\OpenApi\Model\MediaType;
-use ApiPlatform\OpenApi\Model\Operation;
-use ApiPlatform\OpenApi\Model\RequestBody;
-use App\DTO\UserRegisterDTO;
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\SoftDeleteable\Traits\SoftDeleteableEntity;
@@ -31,6 +21,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Gedmo\Mapping\Annotation as Gedmo;
 use App\Entity\Enum\UserRole;
 use DateTimeImmutable;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Component\HttpFoundation\File\File;
 use Vich\UploaderBundle\Mapping\Annotation as Vich;
 
@@ -196,10 +187,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
   #[Groups(groups: ['user:write'])]
   private ?File $avatarFile = null;
 
+  #[ORM\OneToMany(mappedBy: 'invited', targetEntity: ProjectInvitation::class)]
+  #[Groups(groups: ['user:read'])]
+  private Collection $projectInvitations;
 
   #[ORM\Column(type: Types::STRING, length: 255, nullable: true)]
   #[Groups(groups: ['user:read', 'user:write'])]
   private ?string $avatar = null;
+  //#endregion
+
+  //#region Constructeur
+  public function __construct()
+  {
+    $this->projectInvitations = new ArrayCollection();
+  }
   //#endregion
 
   public function getId(): ?Uuid
@@ -307,6 +308,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     if ($avatarFile) {
       $this->updatedAt = new DateTimeImmutable();
+    }
+
+    return $this;
+  }
+
+  public function getProjectInvitations(): Collection
+  {
+    return $this->projectInvitations;
+  }
+
+  public function addProjectInvitation(ProjectInvitation $invitation): static
+  {
+    if (!$this->projectInvitations->contains($invitation)) {
+      $this->projectInvitations->add($invitation);
+      $invitation->setInvited($this);
+    }
+
+    return $this;
+  }
+
+  public function removeProjectInvitation(ProjectInvitation $invitation): static
+  {
+    if ($this->projectInvitations->removeElement($invitation)) {
+      // Set the owning side to null (unless already changed)
+      if ($invitation->getInvited() === $this) {
+        $invitation->setInvited(null);
+      }
     }
 
     return $this;

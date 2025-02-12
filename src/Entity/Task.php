@@ -7,6 +7,12 @@ use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\Repository\TaskRepository;
 use App\State\Task\TaskProvider;
@@ -17,13 +23,14 @@ use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
 use Gedmo\Tree\Traits\NestedSetEntityUuid;
-use InvalidArgumentException;
 use Symfony\Bridge\Doctrine\IdGenerator\UuidGenerator;
 use Symfony\Bridge\Doctrine\Types\UuidType;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Symfony\Component\Uid\Uuid;
 use Symfony\Component\Validator\Constraints as Assert;
 use Gedmo\Mapping\Annotation as Gedmo;
+use App\Entity\Enum\TaskPriority;
+use App\Entity\Enum\TaskStatus;
 
 /**
  * Classe Task (Entité)
@@ -37,6 +44,14 @@ use Gedmo\Mapping\Annotation as Gedmo;
  * @author Valentin FORTIN <contact@valentin-fortin.pro>
  */
 #[ApiResource(
+  shortName: 'Project Task',
+  uriTemplate: '/projects/{project}/tasks',
+  uriVariables: [
+    'project' => new Link(
+      fromClass: Project::class,
+      toProperty: 'project'
+    ),
+  ],
   paginationEnabled: true,
   paginationClientItemsPerPage: true,
   normalizationContext: ['groups' => ['task:read']],
@@ -47,6 +62,54 @@ use Gedmo\Mapping\Annotation as Gedmo;
     'jsonld' => ['application/ld+json'],
     'json' => ['application/json'],
   ],
+  operations: [
+    new GetCollection(
+      uriTemplate: '/projects/{project}/tasks',
+      input: false,
+      output: Task::class,
+      provider: TaskProvider::class,
+      openapi: new Operation(
+        summary: 'List project tasks',
+        description: 'Get the list of tasks for a specific project'
+      )
+    ),
+    new Get(
+      uriTemplate: '/projects/{project}/tasks/{task}',
+      input: false,
+      output: Task::class,
+      openapi: new Operation(
+        summary: 'Get a project task',
+        description: 'Get a specific task for a specific project'
+      )
+    ),
+    new Post(
+      uriTemplate: '/projects/{project}/tasks',
+      input: false,
+      output: Task::class,
+      openapi: new Operation(
+        summary: 'Create a project task',
+        description: 'Create a new task for a specific project'
+      )
+    ),
+    new Patch(
+      uriTemplate: '/projects/{project}/tasks/{task}',
+      input: false,
+      output: Task::class,
+      openapi: new Operation(
+        summary: 'Update a project task',
+        description: 'Update a specific task for a specific project'
+      )
+    ),
+    new Delete(
+      uriTemplate: '/projects/{project}/tasks/{task}',
+      input: false,
+      output: Task::class,
+      openapi: new Operation(
+        summary: 'Delete a project task',
+        description: 'Delete a specific task for a specific project'
+      )
+    ),
+  ]
 )]
 #[ApiFilter(filterClass: RangeFilter::class, properties: ['createdAt'])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['title' => 'partial'])]
@@ -153,58 +216,6 @@ class Task
   private ?DateTimeInterface $dueDate = null;
 
   /**
-   * Propriété STATUS_TODO (constante)
-   * 
-   * Statut de la tâche "À faire"
-   * 
-   * @access private
-   * @since 1.0.0
-   * 
-   * @var string STATUS_TODO Statut de la tâche "À faire"
-   */
-  private const string STATUS_TODO = 'todo';
-
-  /**
-   * Propriété STATUS_IN_PROGRESS (constante)
-   * 
-   * Statut de la tâche "En cours"
-   * 
-   * @access private
-   * @since 1.0.0
-   * 
-   * @var string STATUS_IN_PROGRESS Statut de la tâche "En cours"
-   */
-  private const string STATUS_IN_PROGRESS = 'in_progress';
-
-  /**
-   * Propriété STATUS_DONE (constante)
-   * 
-   * Statut de la tâche "Terminée"
-   * 
-   * @access private
-   * @since 1.0.0
-   * 
-   * @var string STATUS_DONE Statut de la tâche "Terminée"
-   */
-  private const string STATUS_DONE = 'done';
-
-  /**
-   * Propriété STATUSES (constante)
-   * 
-   * Liste des statuts de la tâche
-   * 
-   * @access private
-   * @since 1.0.0
-   * 
-   * @var array STATUSES Liste des statuts de la tâche
-   */
-  private const array STATUSES = [
-    self::STATUS_TODO,
-    self::STATUS_IN_PROGRESS,
-    self::STATUS_DONE,
-  ];
-
-  /**
    * Propriété status
    * 
    * Statut de la tâche
@@ -214,75 +225,9 @@ class Task
    * 
    * @var string $status Statut de la tâche
    */
-  #[ORM\Column(type: Types::STRING, length: 20)]
-  #[Assert\Choice(choices: self::STATUSES, message: 'validation.task.status.choice')]
+  #[ORM\Column(type: Types::STRING, length: 20, enumType: TaskStatus::class)]
   #[Groups(groups: ['task:read', 'task:write'])]
-  private string $status = self::STATUS_TODO;
-
-  /**
-   * Propriété PRIORITY_LOW (constante)
-   * 
-   * Priorité de la tâche "Basse"
-   * 
-   * @access private
-   * @since 1.0.0
-   * 
-   * @var string PRIORITY_LOW Priorité de la tâche "Basse"
-   */
-  private const string PRIORITY_LOW = 'low';
-
-  /**
-   * Propriété PRIORITY_MEDIUM (constante)
-   * 
-   * Priorité de la tâche "Moyenne"
-   * 
-   * @access private
-   * @since 1.0.0
-   * 
-   * @var string PRIORITY_MEDIUM Priorité de la tâche "Moyenne"
-   */
-  private const string PRIORITY_MEDIUM = 'medium';
-
-  /**
-   * Propriété PRIORITY_HIGH (constante)
-   * 
-   * Priorité de la tâche "Haute"
-   * 
-   * @access private
-   * @since 1.0.0
-   * 
-   * @var string PRIORITY_HIGH Priorité de la tâche "Haute"
-   */
-  private const string PRIORITY_HIGH = 'high';
-
-  /**
-   * Propriété PRIORITY_URGENT (constante)
-   * 
-   * Priorité de la tâche "Urgente"
-   * 
-   * @access private
-   * @since 1.0.0
-   * 
-   * @var string PRIORITY_URGENT Priorité de la tâche "Urgente"
-   */
-  private const string PRIORITY_URGENT = 'urgent';
-
-  /**
-   * Propriété PRIORITIES (constante)
-   * 
-   * Liste des priorités de la tâche
-   * 
-   * @access private
-   * @since 1.0.0
-   * 
-   * @var array PRIORITIES Liste des priorités de la tâche
-   */
-  private const array PRIORITIES = [
-    self::PRIORITY_LOW,
-    self::PRIORITY_MEDIUM,
-    self::PRIORITY_HIGH,
-    self::PRIORITY_URGENT,
-  ];
+  private TaskStatus $status = TaskStatus::TODO;
 
   /**
    * Propriété priority
@@ -294,10 +239,9 @@ class Task
    * 
    * @var string $priority Priorité de la tâche
    */
-  #[ORM\Column(type: Types::STRING, length: 10)]
-  #[Assert\Choice(choices: self::PRIORITIES, message: 'validation.task.priority.choice')]
+  #[ORM\Column(type: Types::STRING, length: 10, enumType: TaskPriority::class)]
   #[Groups(groups: ['task:read', 'task:write'])]
-  private string $priority = self::PRIORITY_MEDIUM;
+  private TaskPriority $priority = TaskPriority::MEDIUM;
 
   /**
    * Propriété parent
@@ -483,9 +427,9 @@ class Task
    * @access public
    * @since 1.0.0
    * 
-   * @return string Statut de la tâche
+   * @return TaskStatus Statut de la tâche
    */
-  public function getStatus(): string
+  public function getStatus(): string|TaskStatus   
   {
     return $this->status;
   }
@@ -502,12 +446,8 @@ class Task
    * 
    * @return static
    */
-  public function setStatus(string $status): static
+  public function setStatus(TaskStatus $status): static
   {
-    if (!in_array(needle: $status, haystack: self::STATUSES)) {
-      throw new InvalidArgumentException(message: 'Invalid status');
-    }
-
     $this->status = $status;
 
     return $this;
@@ -521,9 +461,9 @@ class Task
    * @access public
    * @since 1.0.0
    * 
-   * @return string Priorité de la tâche
+   * @return TaskPriority Priorité de la tâche
    */
-  public function getPriority(): string
+  public function getPriority(): string|TaskPriority
   {
     return $this->priority;
   }
@@ -536,16 +476,12 @@ class Task
    * @access public
    * @since 1.0.0
    * 
-   * @param string $priority Priorité de la tâche
+   * @param TaskPriority $priority Priorité de la tâche
    * 
    * @return static
    */
-  public function setPriority(string $priority): static
+  public function setPriority(TaskPriority $priority): static
   {
-    if (!in_array(needle: $priority, haystack: self::PRIORITIES)) {
-      throw new InvalidArgumentException(message: 'Invalid priority');
-    }
-
     $this->priority = $priority;
 
     return $this;

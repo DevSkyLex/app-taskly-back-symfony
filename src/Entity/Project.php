@@ -6,8 +6,15 @@ use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\OpenApi\Model\Operation;
 use App\Entity\Enum\ProjectRole;
 use App\Repository\ProjectRepository;
+use App\State\Project\ProjectCreationProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -40,6 +47,53 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
     'jsonld' => ['application/ld+json'],
     'json' => ['application/json'],
   ],
+  operations: [
+    new GetCollection(
+      input: false,
+      output: Project::class,
+      security: 'is_granted("ROLE_USER")',
+      openapi: new Operation(
+        summary: 'List projects',
+        description: 'Get the list of projects'
+      )
+    ),
+    new Get(
+      input: false,
+      output: Project::class,
+      security: 'is_granted("ROLE_USER") and object.hasMember(user)',
+      openapi: new Operation(
+        summary: 'Get a project',
+        description: 'Get a project resource'
+      )
+    ),
+    new Patch(
+      input: Project::class,
+      output: Project::class,
+      security: 'is_granted("ROLE_USER") and object.isManager(user)',
+      openapi: new Operation(
+        summary: 'Update a project',
+        description: 'Update a project resource'
+      )
+    ),
+    new Delete(
+      input: false,
+      output: Project::class,
+      security: 'is_granted("ROLE_USER") and object.isManager(user)',
+      openapi: new Operation(
+        summary: 'Delete a project',
+        description: 'Delete a project resource'
+      )
+    ),
+    new Post(
+      input: Project::class,
+      output: Project::class,
+      processor: ProjectCreationProcessor::class,
+      openapi: new Operation(
+        summary: 'Create a new project',
+        description: 'Create a new project resource',
+      )
+    )
+  ]
 )]
 #[ApiFilter(filterClass: RangeFilter::class, properties: ['createdAt'])]
 #[ApiFilter(filterClass: SearchFilter::class, properties: ['name' => 'partial'])]
@@ -129,7 +183,6 @@ class Project
   #[Groups(groups: ['project:read'])]
   private Collection $tasks;
 
-
   /**
    * Propriété members
    * 
@@ -140,7 +193,7 @@ class Project
    * 
    * @var Collection $members Liste des membres du projet
    */
-  #[ORM\OneToMany(targetEntity: ProjectMember::class, mappedBy: 'project')]
+  #[ORM\OneToMany(targetEntity: ProjectMember::class, mappedBy: 'project', cascade: ['persist', 'remove'], orphanRemoval: true)]
   #[Groups(groups: ['project:read'])]
   private Collection $members;
   //#endregion
@@ -373,7 +426,7 @@ class Project
   }
 
   /**
-   * Méthode isMember
+   * Méthode hasMember
    * 
    * Vérifie si un utilisateur est membre du projet
    * 
@@ -384,7 +437,8 @@ class Project
    * 
    * @return bool Renvoie vrai si l'utilisateur est membre du projet, sinon faux
    */
-  public function isMember(User $user): bool {
+  public function hasMember(User $user): bool
+  {
     foreach ($this->getMembers() as $member) {
       if ($member->getMember() === $user) {
         return true;

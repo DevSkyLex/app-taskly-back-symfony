@@ -39,7 +39,7 @@ final class ProjectLeaveProcessor implements ProcessorInterface
       throw new LogicException(message: 'The user must be authenticated');
     }
 
-    $project = $this->projectRepository->find(id: $uriVariables['id']);
+    $project = $this->projectRepository->find(id: $uriVariables['project']);
 
     if (!$project instanceof Project) {
       throw new LogicException(message: 'The project does not exist');

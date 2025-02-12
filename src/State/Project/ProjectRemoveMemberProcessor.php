@@ -41,13 +41,13 @@ final class ProjectRemoveMemberProcessor implements ProcessorInterface
       throw new AccessDeniedException(message: 'The user must be authenticated');
     }
 
-    $project = $this->projectRepository->find(id: $uriVariables['id']);
+    $project = $this->projectRepository->find(id: $uriVariables['project']);
 
     if (!$project instanceof Project) {
       throw new NotFoundHttpException(message: 'The project does not exist');
     }
 
-    $user = $this->userRepository->find(id: $data['userId']);
+    $user = $this->userRepository->find(id: $data['user']);
 
     if (!$user instanceof User) {
       throw new NotFoundHttpException(message: 'The user does not exist');

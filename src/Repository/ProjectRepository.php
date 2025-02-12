@@ -3,10 +3,12 @@
 namespace App\Repository;
 
 use App\Entity\Project;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Tools\Pagination\Paginator;
 use Doctrine\Persistence\ManagerRegistry;
 use Doctrine\Common\Collections\Criteria;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * Classe ProjectRepository (Dépôt de données)
@@ -28,12 +30,12 @@ final class ProjectRepository extends ServiceEntityRepository
    * 
    * Alias de la table principale
    * 
-   * @access private
+   * @access public
    * @since 1.0.0
    * 
    * @var string ALIAS Alias de la table principale
    */
-  private const string ALIAS = 'p';
+  public const string ALIAS = 'p';
 
   /**
    * Constante SEARCHABLE_FIELDS
@@ -79,68 +81,61 @@ final class ProjectRepository extends ServiceEntityRepository
   public function __construct(ManagerRegistry $registry)
   {
     parent::__construct(
-      registry: $registry, 
+      registry: $registry,
       entityClass: Project::class
     );
   }
   //#endregion
 
   //#region Méthodes
-  /**
-   * Méthode findAllPaginated
-   * 
-   * Permet de récupérer la liste des projets paginée
-   * 
-   * @access public
-   * @since 1.0.0
-   * 
-   * @param int $limit Le nombre de projets par page
-   * @param int $offset Le numéro de la page
-   * @param string|null $search La recherche
-   * @param array|null $filters Les filtres
-   * 
-   * @return Paginator<Project> La liste des projets paginée
-   */
-  public function findAllPaginated(
-    int $limit = 10,
-    int $offset = 0,
-    string $search = null,
-  ): Paginator {
-    $queryBuilder = $this->createQueryBuilder(alias: self::ALIAS)
-      ->orderBy(sort: 'p.createdAt', order: 'DESC')
-      ->setMaxResults(maxResults: $limit)
-      ->setFirstResult(firstResult: $offset);
-
-    $criteria = Criteria::create();
-
-    if ($search) {
-      foreach (self::SEARCHABLE_FIELDS as $field) {
-        $criteria->orWhere(
-          expression: Criteria::expr()->contains(
-            field: $field, 
-            value: $search
-          )
-        );
-      }
-    }
-
-    if (!empty($filters)) {
-      foreach ($filters as $field => $value) {
-        $criteria->andWhere(
-          expression: Criteria::expr()->eq(
-            field: $field, 
-            value: $value
-          )
-        );
-      }
-    }
-
-    $queryBuilder->addCriteria(criteria: $criteria);
-
-    return new Paginator(
-      query: $queryBuilder->getQuery(),
-      fetchJoinCollection: true
-    );
+  public function findProjectsForUser(User $user): array
+  {
+    return $this->createQueryBuilder(alias: self::ALIAS)
+      ->select(self::ALIAS)
+      ->join(join: self::ALIAS . '.members', alias: 'm')
+      ->where('m.member = :userId')
+      ->setParameter(key: 'userId', value: $user->getId())
+      ->getQuery()
+      ->getResult();
   }
+
+  public function save(Project $project): void
+  {
+    $this->getEntityManager()->persist(object: $project);
+    $this->getEntityManager()->flush();
+  }
+
+  public function delete(Project $project): void
+  {
+    $this->getEntityManager()->remove(object: $project);
+    $this->getEntityManager()->flush();
+  }
+
+  public function exists(Uuid $id): bool
+  {
+    return $this->createQueryBuilder(alias: self::ALIAS)
+      ->select('COUNT(p.id)')
+      ->where('p.id = :id')
+      ->setParameter(key: 'id', value: $id)
+      ->getQuery()
+      ->getSingleScalarResult() > 0;
+  }
+
+  public function isMember(Uuid $projectId, Uuid $userId): bool
+  {
+    $qb = $this->createQueryBuilder('p');
+
+    return (bool) $qb
+      ->select('1')
+      ->innerJoin('p.members', 'm')
+      ->where('m.member = :userId')
+      ->andWhere('m.project = :projectId')
+      ->setParameter('userId', $userId)
+      ->setParameter('projectId', $projectId)
+      ->getQuery()
+      ->getOneOrNullResult();
+  }
+
+
   //#endregion
 }

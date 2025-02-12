@@ -39,15 +39,13 @@ final class ProjectAcceptInvitationProcessor implements ProcessorInterface
       throw new LogicException(message: 'The user must be authenticated');
     }
 
-    $project = $this->projectRepository->find(id: $uriVariables['id']);
-
+    $project = $this->projectRepository->find(id: $uriVariables['project']);
     if (!$project instanceof Project) {
       throw new LogicException(message: 'The project does not exist');
     }
 
     $invitation = $this->projectInvitationRepository->findOneBy(criteria: [
-      'project' => $project,
-      'invited' => $user,
+      'id' => $uriVariables['invitation'],
       'status' => ProjectInvitationStatus::PENDING
     ]);
 
@@ -64,6 +62,7 @@ final class ProjectAcceptInvitationProcessor implements ProcessorInterface
 
     $member = new ProjectMember();
     $member->setProject(project: $project);
+    $member->setMember(member: $user);
     
     $this->projectMemberRepository->save(projectMember: $member);
 

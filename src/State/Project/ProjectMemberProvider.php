@@ -7,6 +7,7 @@ use ApiPlatform\State\ProviderInterface;
 use App\Entity\User;
 use App\Repository\ProjectMemberRepository;
 use App\Repository\ProjectRepository;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -17,34 +18,35 @@ final class ProjectMemberProvider implements ProviderInterface
     private readonly ProjectMemberRepository $projectMemberRepository,
     private readonly ProjectRepository $projectRepository,
     private readonly Security $security
-  ) {}
+  ) {
+  }
 
   public function provide(
-    Operation $operation, 
-    array $uriVariables = [], 
+    Operation $operation,
+    array $uriVariables = [],
     array $context = []
-  ): array {
-      $user = $this->security->getUser();
-      if (!$user instanceof User) {
-         throw new NotFoundHttpException(message: 'The user must be authenticated.');
-      }
+  ): Collection {
+    $user = $this->security->getUser();
+    if (!$user instanceof User) {
+      throw new NotFoundHttpException(message: 'The user must be authenticated.');
+    }
 
-      $project = $this->projectRepository->find(id: $uriVariables['id']);
-      if (!$project) {
-        throw new NotFoundHttpException(message: 'The project does not exist.');
-      }
+    $project = $this->projectRepository->find(id: $uriVariables['project']);
+    if (!$project) {
+      throw new NotFoundHttpException(message: 'The project does not exist.');
+    }
 
-      $membership = $this->projectMemberRepository->findOneBy(criteria: [
-        'project' => $project,
-        'member' => $user
-      ]);
+    $membership = $this->projectRepository->isMember(
+      projectId: $project->getId(), 
+      userId: $user->getId()
+    );
 
-      if (!$membership) {
-        throw new AccessDeniedHttpException(message: 'You are not a member of this project.');
-      }
+    if (!$membership) {
+      throw new AccessDeniedHttpException(message: 'You are not a member of this project.');
+    }
 
-      $members = $this->projectMemberRepository->findBy(criteria: ['project' => $project]);
-      
-      return $members;
+    $members = $project->getMembers();
+
+    return $members;
   }
 }
