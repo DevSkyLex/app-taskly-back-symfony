@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Task;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Uid\Uuid;
 
@@ -21,6 +22,12 @@ class TaskRepository extends ServiceEntityRepository
   }
 
   //#region Méthodes
+  public function save(Task $task): void
+  {
+    $this->getEntityManager()->persist($task);
+    $this->getEntityManager()->flush();
+  }
+
   public function findRootTasks(): array
   {
     return $this->createQueryBuilder(alias: 't')
@@ -41,8 +48,8 @@ class TaskRepository extends ServiceEntityRepository
   public function findRootTasksByProjectId(Uuid $projectId): array
   {
     return $this->createQueryBuilder(alias: 't')
-      ->where('t.parent IS NULL')
-      ->andWhere( 't.project = :projectId')
+      ->where( 't.project = :projectId')
+      ->andWhere('t.parent IS NULL')
       ->setParameter(key: 'projectId', value: $projectId)
       ->getQuery()
       ->getResult();

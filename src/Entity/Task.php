@@ -6,6 +6,7 @@ use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use ApiPlatform\Doctrine\Orm\Filter\RangeFilter;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Get;
@@ -15,6 +16,7 @@ use ApiPlatform\Metadata\Link;
 use ApiPlatform\Metadata\Patch;
 use ApiPlatform\OpenApi\Model\Operation;
 use App\Repository\TaskRepository;
+use App\State\Task\TaskCreationProcessor;
 use App\State\Task\TaskProvider;
 use DateTimeInterface;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -44,23 +46,16 @@ use App\Entity\Enum\TaskStatus;
  * @author Valentin FORTIN <contact@valentin-fortin.pro>
  */
 #[ApiResource(
-  shortName: 'Project Task',
-  uriTemplate: '/projects/{project}/tasks',
+  shortName: 'Task',
+  paginationClientEnabled: true,
+  paginationClientItemsPerPage: true,
+  normalizationContext: ['groups' => ['task:read']],
+  denormalizationContext: ['groups' => ['task:write']],
   uriVariables: [
     'project' => new Link(
       fromClass: Project::class,
       toProperty: 'project'
     ),
-  ],
-  paginationEnabled: true,
-  paginationClientItemsPerPage: true,
-  normalizationContext: ['groups' => ['task:read']],
-  denormalizationContext: ['groups' => ['task:write']],
-  provider: TaskProvider::class,
-  outputFormats: ['jsonld' => ['application/ld+json']],
-  inputFormats: [
-    'jsonld' => ['application/ld+json'],
-    'json' => ['application/json'],
   ],
   operations: [
     new GetCollection(
@@ -73,47 +68,17 @@ use App\Entity\Enum\TaskStatus;
         description: 'Get the list of tasks for a specific project'
       )
     ),
-    new Get(
-      uriTemplate: '/projects/{project}/tasks/{task}',
-      input: false,
-      output: Task::class,
-      openapi: new Operation(
-        summary: 'Get a project task',
-        description: 'Get a specific task for a specific project'
-      )
-    ),
     new Post(
       uriTemplate: '/projects/{project}/tasks',
-      input: false,
-      output: Task::class,
+      input: Task::class,
+      processor: TaskCreationProcessor::class,
       openapi: new Operation(
-        summary: 'Create a project task',
-        description: 'Create a new task for a specific project'
-      )
-    ),
-    new Patch(
-      uriTemplate: '/projects/{project}/tasks/{task}',
-      input: false,
-      output: Task::class,
-      openapi: new Operation(
-        summary: 'Update a project task',
-        description: 'Update a specific task for a specific project'
-      )
-    ),
-    new Delete(
-      uriTemplate: '/projects/{project}/tasks/{task}',
-      input: false,
-      output: Task::class,
-      openapi: new Operation(
-        summary: 'Delete a project task',
-        description: 'Delete a specific task for a specific project'
+        summary: 'Create a task',
+        description: 'Allow a user to create a task'
       )
     ),
   ]
 )]
-#[ApiFilter(filterClass: RangeFilter::class, properties: ['createdAt'])]
-#[ApiFilter(filterClass: SearchFilter::class, properties: ['title' => 'partial'])]
-#[ApiFilter(filterClass: OrderFilter::class, properties: ['createdAt', 'title'], arguments: ['orderParameterName' => 'order'])]
 #[Gedmo\Tree(type: 'nested')]
 #[ORM\Entity(repositoryClass: TaskRepository::class)]
 class Task
@@ -155,7 +120,8 @@ class Task
   #[ORM\GeneratedValue(strategy: 'CUSTOM')]
   #[ORM\Column(type: UuidType::NAME, unique: true)]
   #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-  #[Groups(groups: ['task:read', 'task:write'])]
+  #[Groups(groups: ['task:read'])]
+  #[ApiProperty(identifier: true)]
   private ?Uuid $id = null;
 
   /**
@@ -169,12 +135,12 @@ class Task
    * @var string|null $title Titre de la tâche
    */
   #[ORM\Column(type: Types::STRING, length: 255)]
-  #[Assert\NotBlank(message: 'validation.task.title.not_blank')]
+  #[Assert\NotBlank(message: 'The title is required')]
   #[Assert\Length(
     min: 3,
     max: 255,
-    maxMessage: 'validation.task.title.length.max',
-    minMessage: 'validation.task.title.length.min'
+    maxMessage: 'The title must be less than {{ limit }} characters long',
+    minMessage: 'The title must be at least {{ limit }} characters long'
   )]
   #[Groups(groups: ['task:read', 'task:write'])]
   private ?string $title = null;
@@ -191,8 +157,10 @@ class Task
    */
   #[ORM\Column(type: Types::TEXT, nullable: true)]
   #[Assert\Length(
+    min: 3,
     max: 2048,
-    maxMessage: 'validation.task.description.length.max'
+    maxMessage: 'The description must be less than {{ limit }} characters long',
+    minMessage: 'The description must be at least {{ limit }} characters long'
   )]
   #[Groups(groups: ['task:read', 'task:write'])]
   private ?string $description = null;
@@ -210,7 +178,7 @@ class Task
   #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
   #[Assert\Type(
     type: DateTimeInterface::class,
-    message: 'validation.task.due_date.type'
+    message: 'The due date must be a valid date'
   )]
   #[Groups(groups: ['task:read', 'task:write'])]
   private ?DateTimeInterface $dueDate = null;
@@ -255,6 +223,7 @@ class Task
    */
   #[Gedmo\TreeParent]
   #[ORM\ManyToOne(targetEntity: self::class, inversedBy: 'children')]
+  #[ApiProperty(readableLink: false, writableLink: false)]
   private ?self $parent = null;
 
   /**
@@ -268,7 +237,7 @@ class Task
    * @var Collection $children Enfants de la tâche
    */
   #[ORM\OneToMany(mappedBy: 'parent', targetEntity: self::class)]
-  #[Groups(groups: ['task:read'])]
+  #[ApiProperty(readableLink: false)]
   private Collection $children;
 
   /**
@@ -281,7 +250,9 @@ class Task
    * 
    * @var Project|null $project Projet de la tâche
    */
-  #[ORM\ManyToOne(inversedBy: 'tasks')]
+  #[ORM\ManyToOne(inversedBy: 'tasks', targetEntity: Project::class)]
+  #[ORM\JoinColumn(name: 'project_id', referencedColumnName: 'id', nullable: false)]
+  #[Groups(groups: ['task:read'])]
   private ?Project $project = null;
   //#endregion
 

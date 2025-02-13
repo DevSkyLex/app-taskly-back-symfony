@@ -22,13 +22,6 @@ use Symfony\Component\Uid\Uuid;
 
 #[ApiResource(
   shortName: 'Project Member',
-  uriTemplate: '/projects/{project}/members',
-  uriVariables: [
-    'project' => new Link(
-      fromClass: Project::class,
-      toProperty: 'project'
-    ),
-  ],
   paginationEnabled: true,
   paginationClientItemsPerPage: true,
   normalizationContext: ['groups' => ['project_member:read']],
@@ -36,6 +29,12 @@ use Symfony\Component\Uid\Uuid;
   operations: [
     new GetCollection(
       uriTemplate: '/projects/{project}/members',
+      uriVariables: [
+        'project' => new Link(
+          fromClass: Project::class,
+          toProperty: 'project'
+        ),
+      ],
       input: false,
       output: ProjectMember::class,
       provider: ProjectMemberProvider::class,
@@ -47,6 +46,12 @@ use Symfony\Component\Uid\Uuid;
     ),
     new Delete(
       uriTemplate: '/projects/{project}/members/leave',
+      uriVariables: [
+        'project' => new Link(
+          fromClass: Project::class,
+          toProperty: 'project'
+        ),
+      ],
       input: false,
       processor: ProjectLeaveProcessor::class,
       openapi: new Operation(
@@ -56,6 +61,13 @@ use Symfony\Component\Uid\Uuid;
     ),
     new Delete(
       uriTemplate: '/projects/{project}/members/{user}',
+      uriVariables: [
+        'project' => new Link(
+          fromClass: Project::class,
+          toProperty: 'project'
+        ),
+        'user'
+      ],
       security: 'is_granted(\'ROLE_USER\') and object.isManager()',
       input: false,
       processor: ProjectRemoveMemberProcessor::class,

@@ -4,13 +4,15 @@ namespace App\State\Task;
 
 use ApiPlatform\Metadata\Operation;
 use ApiPlatform\State\ProviderInterface;
-use App\Entity\Project;
 use App\Entity\User;
 use App\Repository\ProjectRepository;
 use App\Repository\TaskRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Uid\Uuid;
 
 final class TaskProvider implements ProviderInterface
 {
@@ -51,14 +53,20 @@ final class TaskProvider implements ProviderInterface
     Operation $operation, 
     array $uriVariables = [], 
     array $context = []
-  ): array
+  ): Collection
   {
     $user = $this->security->getUser();
     if (!$user instanceof User) {
       throw new AccessDeniedHttpException(message: 'The user must be authenticated.');
     }
 
-    $existingProject = $this->projectRepository->exists(id: $uriVariables['project']);
+    $projectId = $uriVariables['project'] ?? null;
+
+    if (!$projectId instanceof Uuid || !Uuid::isValid(uuid: $projectId)) {
+      throw new NotFoundHttpException(message: 'The project does not exist.');
+    }
+
+    $existingProject = $this->projectRepository->find(id: $projectId->toString());
     if (!$existingProject) {
       throw new NotFoundHttpException(message: 'The project does not exist.');
     }
@@ -71,9 +79,12 @@ final class TaskProvider implements ProviderInterface
       throw new AccessDeniedHttpException(message: 'The user is not a member of the project.');
     }
 
-    $tasks = $this->taskRepository->findRootTasksByProjectId(projectId: $uriVariables['project']);
+    $tasks = $this->taskRepository->findBy(criteria: [
+      'project' => $uriVariables['project'],
+      'parent' => null
+    ]);
 
-    return $tasks;
+    return new ArrayCollection(elements: $tasks);
   }
   //#endregion
 }

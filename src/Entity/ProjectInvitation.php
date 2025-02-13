@@ -23,13 +23,6 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 #[ApiResource(
   shortName: 'Project Invitation',
-  uriTemplate: '/projects/{project}/invitations',
-  uriVariables: [
-    'project' => new Link(
-      fromClass: Project::class,
-      toProperty: 'project'
-    ),
-  ],
   paginationEnabled: true,
   paginationClientItemsPerPage: true,
   normalizationContext: ['groups' => ['project_invitation:read']],

@@ -15,6 +15,7 @@ use ApiPlatform\OpenApi\Model\Operation;
 use App\Entity\Enum\ProjectRole;
 use App\Repository\ProjectRepository;
 use App\State\Project\ProjectCreationProcessor;
+use App\State\Task\TaskProvider;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -38,15 +39,11 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
  * @author Valentin FORTIN <contact@valentin-fortin.pro>
  */
 #[ApiResource(
+  shortName: 'Project',
   paginationEnabled: true,
   paginationClientItemsPerPage: true,
-  normalizationContext: ['groups' => ['project:read']],
+  normalizationContext: ['groups' => ['project:read', 'task:read']],
   denormalizationContext: ['groups' => ['project:write']],
-  outputFormats: ['jsonld' => ['application/ld+json']],
-  inputFormats: [
-    'jsonld' => ['application/ld+json'],
-    'json' => ['application/json'],
-  ],
   operations: [
     new GetCollection(
       input: false,
@@ -138,7 +135,7 @@ class Project
   #[ORM\GeneratedValue(strategy: 'CUSTOM')]
   #[ORM\Column(type: UuidType::NAME, unique: true)]
   #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-  #[Groups(groups: ['project:read', 'project:write'])]
+  #[Groups(groups: ['project:read', 'project:write', 'task:read'])]
   private ?Uuid $id = null;
 
   /**
@@ -152,7 +149,7 @@ class Project
    * @var string|null $name Nom du projet
    */
   #[ORM\Column(type: Types::STRING, length: 255)]
-  #[Groups(groups: ['project:read', 'project:write'])]
+  #[Groups(groups: ['project:read', 'project:write', 'task:read'])]
   private ?string $name = null;
 
   /**
@@ -166,7 +163,7 @@ class Project
    * @var string|null $description Description du projet
    */
   #[ORM\Column(type: Types::TEXT, nullable: true)]
-  #[Groups(groups: ['project:read', 'project:write'])]
+  #[Groups(groups: ['project:read', 'project:write', 'task:read'])]
   private ?string $description = null;
 
   /**
