@@ -77,7 +77,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
   #[ORM\GeneratedValue(strategy: 'CUSTOM')]
   #[ORM\Column(type: UuidType::NAME, unique: true)]
   #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-  #[Groups(groups: ['user:read', 'user:write'])]
+  #[Groups(groups: ['user:read', 'user:write', 'project_member:read', 'project_invitation:read'])]
   private ?Uuid $id = null;
 
   /**
@@ -93,7 +93,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
   #[ORM\Column(type: Types::STRING, length: 180, unique: true)]
   #[Assert\Email(message: 'The email "{{ value }}" is not a valid email.')]
   #[Assert\NotBlank(message: 'Please enter an email')]
-  #[Groups(groups: ['user:read', 'user:write'])]
+  #[Groups(groups: ['user:read', 'user:write', 'project_member:read', 'project_invitation:read'])]
   private ?string $email = null;
 
   /**
@@ -136,7 +136,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
    * 
    * @var string|null $firstName Prénom de l'utilisateur
    */
-  #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
+  #[ORM\Column(type: Types::STRING, length: 50, nullable: false)]
   #[Assert\NotBlank(message: 'Please enter a first name')]
   #[Assert\Length(
     min: 2,
@@ -144,7 +144,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     minMessage: 'The first name must be at least {{ limit }} characters long',
     maxMessage: 'The first name cannot be longer than {{ limit }} characters'
   )]
-  #[Groups(groups: ['user:read', 'user:write'])]
+  #[Groups(groups: ['user:read', 'user:write', 'project_member:read', 'project_invitation:read'])]
   private ?string $firstName = null;
 
   /**
@@ -157,7 +157,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
    * 
    * @var string|null $lastName Nom de l'utilisateur
    */
-  #[ORM\Column(type: Types::STRING, length: 50, nullable: true)]
+  #[ORM\Column(type: Types::STRING, length: 50, nullable: false)]
   #[Assert\NotBlank(message: 'Please enter a last name')]
   #[Assert\Length(
     min: 2,
@@ -165,7 +165,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     minMessage: 'The last name must be at least {{ limit }} characters long',
     maxMessage: 'The last name cannot be longer than {{ limit }} characters'
   )]
-  #[Groups(groups: ['user:read', 'user:write'])]
+  #[Groups(groups: ['user:read', 'user:write', 'project_member:read', 'project_invitation:read'])]
   private ?string $lastName = null;
 
   /**

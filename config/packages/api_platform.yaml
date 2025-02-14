@@ -15,3 +15,7 @@ api_platform:
     stateless: true
     cache_headers:
       vary: ["Content-Type", "Authorization", "Origin"]
+
+  collection:
+    pagination:
+      page_parameter_name: page

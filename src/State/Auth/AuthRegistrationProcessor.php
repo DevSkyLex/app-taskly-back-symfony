@@ -13,7 +13,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Serializer\SerializerInterface;
 
 /**
- * Classe UserRegistrationProcessor
+ * Classe AuthRegistrationProcessor
  * @final
  * 
  * Cette classe permet de traiter les données
@@ -86,6 +86,8 @@ final class AuthRegistrationProcessor implements ProcessorInterface
         plainPassword: $data->password
       )
     );
+    $user->setFirstName(firstName: $data->firstName);
+    $user->setLastName(lastName: $data->lastName);
 
     $this->userRepository->save(user: $user);
 

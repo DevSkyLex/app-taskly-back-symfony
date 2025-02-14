@@ -42,7 +42,7 @@ use Gedmo\Timestampable\Traits\TimestampableEntity;
   shortName: 'Project',
   paginationEnabled: true,
   paginationClientItemsPerPage: true,
-  normalizationContext: ['groups' => ['project:read', 'task:read']],
+  normalizationContext: ['groups' => ['project:read']],
   denormalizationContext: ['groups' => ['project:write']],
   operations: [
     new GetCollection(
@@ -135,7 +135,7 @@ class Project
   #[ORM\GeneratedValue(strategy: 'CUSTOM')]
   #[ORM\Column(type: UuidType::NAME, unique: true)]
   #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-  #[Groups(groups: ['project:read', 'project:write', 'task:read'])]
+  #[Groups(groups: ['project:read', 'project:write', 'task:read', 'project_member:read', 'project_invitation:read'])]
   private ?Uuid $id = null;
 
   /**
@@ -149,7 +149,7 @@ class Project
    * @var string|null $name Nom du projet
    */
   #[ORM\Column(type: Types::STRING, length: 255)]
-  #[Groups(groups: ['project:read', 'project:write', 'task:read'])]
+  #[Groups(groups: ['project:read', 'project:write', 'task:read', 'project_member:read', 'project_invitation:read'])]
   private ?string $name = null;
 
   /**
@@ -163,7 +163,7 @@ class Project
    * @var string|null $description Description du projet
    */
   #[ORM\Column(type: Types::TEXT, nullable: true)]
-  #[Groups(groups: ['project:read', 'project:write', 'task:read'])]
+  #[Groups(groups: ['project:read', 'project:write', 'task:read', 'project_invitation:read'])]
   private ?string $description = null;
 
   /**

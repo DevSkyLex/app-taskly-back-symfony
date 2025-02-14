@@ -34,28 +34,6 @@ use App\DTO\Auth\AuthRegistrationOutput;
         security: ['no_auth' => []]
       )
     ),
-    new Post(
-      uriTemplate: '/login',
-      input: AuthLoginInput::class,
-      output: AuthLoginOutput::class,
-      processor: AuthLoginProcessor::class,
-      openapi: new Operation(
-        summary: 'Login a user',
-        description: 'Login a user with email and password',
-        security: ['no_auth' => []]
-      )
-    ),
-    new Post(
-      uriTemplate: '/refresh',
-      input: false,
-      output: AuthLoginOutput::class,
-      processor: AuthRefreshProcessor::class,
-      openapi: new Operation(
-        summary: 'Refresh the JWT token',
-        description: 'Refresh the JWT token with a refresh token',
-        security: ['no_auth' => []]
-      )
-    )
   ]
 )]
 final class AuthenticationResource {}

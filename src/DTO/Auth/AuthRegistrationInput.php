@@ -77,6 +77,58 @@ final class AuthRegistrationInput
       message: 'Password is required'
     )]
     public string $password = '',
+
+    /**
+     * Propriété firstName
+     * 
+     * Prénom de l'utilisateur
+     * 
+     * @access public
+     * @since 1.0.0
+     * 
+     * @var string $firstName Prénom de l'utilisateur
+     */
+    #[ApiProperty(
+      description: 'User first name',
+      example: 'John',
+      required: true,
+    )]
+    #[Assert\Length(
+      min: 2,
+      max: 50,
+      minMessage: 'The first name must be at least {{ limit }} characters long',
+      maxMessage: 'The first name cannot be longer than {{ limit }} characters',
+    )]
+    #[Assert\NotBlank(
+      message: 'First name is required',
+    )]
+    public string $firstName = '',
+
+    /**
+     * Propriété lastName
+     * 
+     * Nom de l'utilisateur
+     * 
+     * @access public
+     * @since 1.0.0
+     * 
+     * @var string $lastName Nom de l'utilisateur
+     */
+    #[ApiProperty(
+      description: 'User last name',
+      example: 'Doe',
+      required: true,
+    )]
+    #[Assert\Length(
+      min: 2,
+      max: 50,
+      minMessage: 'The last name must be at least {{ limit }} characters long',
+      maxMessage: 'The last name cannot be longer than {{ limit }} characters',
+    )]
+    #[Assert\NotBlank(
+      message: 'Last name is required',
+    )]
+    public string $lastName = '',
   ) {}
   //#endregion
 }

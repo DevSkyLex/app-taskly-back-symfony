@@ -120,7 +120,7 @@ class Task
   #[ORM\GeneratedValue(strategy: 'CUSTOM')]
   #[ORM\Column(type: UuidType::NAME, unique: true)]
   #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-  #[Groups(groups: ['task:read'])]
+  #[Groups(groups: ['task:read', 'project:read'])]
   #[ApiProperty(identifier: true)]
   private ?Uuid $id = null;
 
@@ -142,7 +142,7 @@ class Task
     maxMessage: 'The title must be less than {{ limit }} characters long',
     minMessage: 'The title must be at least {{ limit }} characters long'
   )]
-  #[Groups(groups: ['task:read', 'task:write'])]
+  #[Groups(groups: ['task:read', 'task:write', 'project:read'])]
   private ?string $title = null;
 
   /**
@@ -194,7 +194,7 @@ class Task
    * @var string $status Statut de la tâche
    */
   #[ORM\Column(type: Types::STRING, length: 20, enumType: TaskStatus::class)]
-  #[Groups(groups: ['task:read', 'task:write'])]
+  #[Groups(groups: ['task:read', 'task:write', 'project:read'])]
   private TaskStatus $status = TaskStatus::TODO;
 
   /**

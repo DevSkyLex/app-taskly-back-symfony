@@ -73,7 +73,7 @@ class ProjectInvitation
   #[ORM\GeneratedValue(strategy: 'CUSTOM')]
   #[ORM\Column(type: UuidType::NAME, unique: true)]
   #[ORM\CustomIdGenerator(class: UuidGenerator::class)]
-  #[Groups(groups: ['user:read', 'user:write'])]
+  #[Groups(groups: ['project_invitation:read', 'project_invitation:write'])]
   private ?Uuid $id = null;
 
   #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'projectInvitations')]
